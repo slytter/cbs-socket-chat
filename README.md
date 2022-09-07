@@ -6,4 +6,4 @@ npm install express locus socket.io
 
 node index.js
 
-https://b594-87-49-146-44.eu.ngrok.io
+https://50ec-87-49-146-44.eu.ngrok.io
