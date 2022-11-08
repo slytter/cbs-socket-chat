@@ -57,18 +57,22 @@ var io = require("socket.io")(server, {
 
 
 io.on('connection', function(socket){
+
+  // Når en ny bruger joiner
   socket.on('join', async function(name){
     socket.username = name
     io.sockets.emit("addChatter", name);
     io.sockets.emit('new_message', {username: 'Server', message: 'Velkommen ' + name + '!'});
   });
 
+  // Når server modtager en ny besked
   socket.on('new_message', function(message){
     const username = socket.username
     console.log(username + ': ' + message);
     io.sockets.emit("new_message", {username, message});
   });
-
+  
+  // Når en bruger disconnecter
   socket.on('disconnect', function(name){
     io.sockets.emit("removeChatter", socket.username);
   });
