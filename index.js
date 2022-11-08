@@ -63,10 +63,15 @@ io.on('connection', function(socket){
     socket.username = name
     io.sockets.emit("addChatter", name);
     io.sockets.emit('new_message', {username: 'Server', message: 'Velkommen ' + name + '!'});
+    // Opgave 1b ...
+
   });
 
   // Når server modtager en ny besked
   socket.on('new_message', function(message){
+    // Opgave 1a ...
+
+
     const username = socket.username
     console.log(username + ': ' + message);
     io.sockets.emit("new_message", {username, message});

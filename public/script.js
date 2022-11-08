@@ -15,6 +15,8 @@ $(document).ready(function(){
   // adds HTML message to chat
   const addMessageToChat = (message) => {
     const messageElement = document.createElement('li');
+    // Opgave 2 ...
+    
     messageElement.innerText = message.username + ": " + message.message;
     $("#messagesContainer").append(messageElement);
   }
