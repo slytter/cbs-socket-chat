@@ -1,18 +1,51 @@
-const express = require("express"),
+const express = require("express")
+const sqlite3 = require('sqlite3').verbose();
 
 app = express();
 app.use(express.static(__dirname + '/public'))
-
-var server = require("http").createServer(app);
-
+const server = require("http").createServer(app);
 
 
 
+// Sqlite ting
+const db = new sqlite3.Database('./db.sqlite');
+
+db.serialize(function() {
+  console.log('creating databases if they don\'t exist');
+  db.run('create table if not exists messages (messageid integer primary key, username text not null, message text, timestamp integer)');
+});
+
+
+// Tilføjer message til db `message: {username, message}`
+const addMessageToDatabase = (message) => {
+  db.run(
+    'insert into messages (username, message, timestamp) values (?, ?, ?)', 
+    [message.username, message.message, Date.now()], 
+    function(err) {
+      if (err) {
+        console.error(err);
+      }
+    }
+  );
+}
+
+
+const getAllMessages = () => {
+  // Smart måde at konvertere fra callback til promise:
+  return new Promise((resolve, reject) => {  
+    db.all('select * from messages', (err, rows) => {
+      if (err) {
+        console.error(err);
+        return reject(err);
+      }
+      return resolve(rows);
+    });
+  })
+}
 
 
 
-
-
+// socket IO ting
 var io = require("socket.io")(server, {
     /* Handling CORS: https://socket.io/docs/v3/handling-cors/ for ngrok.io */
     cors: {
@@ -21,18 +54,19 @@ var io = require("socket.io")(server, {
     }
 });
 
+
+
 io.on('connection', function(socket){
-  socket.on('join', function(name){
+  socket.on('join', async function(name){
     socket.username = name
     io.sockets.emit("addChatter", name);
-
-    io.sockets.emit("messages", {username: 'din far', message: 'tak'});
-
+    io.sockets.emit('new_message', {username: 'Server', message: 'Velkommen ' + name + '!'});
   });
 
-  socket.on('messages', function(message){
-    username = socket.username
-    io.sockets.emit("messages", {username, message});
+  socket.on('new_message', function(message){
+    const username = socket.username
+    console.log(username + ': ' + message);
+    io.sockets.emit("new_message", {username, message});
   });
 
   socket.on('disconnect', function(name){
@@ -42,8 +76,7 @@ io.on('connection', function(socket){
 
 
 
-
-
+// HTTP ting
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
 });

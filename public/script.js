@@ -1,36 +1,53 @@
 $(document).ready(function(){
-    var socket = io.connect('http://localhost:3000');
+  var socket = io.connect('http://localhost:3000');
+  var username = prompt("What is your name?");
+  socket.emit('join', username);
   
-    var username = prompt("What is your name?");
-    socket.emit('join', username);
-    
-    
-  
-    $("#chatForm").on('submit', function(e){
-      e.preventDefault();
-      var message = $("#message").val();
-      socket.emit('messages',message)
-      $("#message").val("");
-    })
-  
-    socket.on('messages', function(data){
-      $message = $("<li>", {
-        text: `${data.username} says ${data.message}`
-      })
-      $("#messagesContainer").append($message);
-    })
-  
-    socket.on('addChatter', function(name){
-      var $chatter = $("<li>", {
-        text: name,
-        attr: {
-          'data-name':name
-        }
-      })
-      $("#chatters").append($chatter)
-    })
-  
-    socket.on("removeChatter", function(name){
-      $("#chatters li[data-name=" + name +"]").remove()
+
+  // Listens for form submission
+  $("#chatForm").on('submit', function(e){
+    e.preventDefault();
+    var message = $("#message").val();
+    socket.emit('new_message', message)
+    $("#message").val("");
+  })
+
+  // adds HTML message to chat
+  const addMessageToChat = (message) => {
+    const messageElement = document.createElement('li');
+    messageElement.innerText = message.username + ": " + message.message;
+    $("#messagesContainer").append(messageElement);
+  }
+
+
+  // On receiving one message
+  socket.on('new_message', function(message){
+    console.log('message: ', message)
+    addMessageToChat(message);
+  })
+
+
+  // on receiving a list of messages
+  socket.on('messages', function(messages) {
+    console.log('messages: ', messages)
+    messages.forEach(message => {
+      addMessageToChat(message);
     })
   })
+
+  // On person joined chat
+  socket.on('addChatter', function(name){
+    var $chatter = $("<li>", {
+      text: name,
+      attr: {
+        'data-name':name
+      }
+    })
+    $("#chatters").append($chatter)
+  })
+
+  // On person disconnect
+  socket.on("removeChatter", function(name){
+    $("#chatters li[data-name=" + name +"]").remove()
+  })
+})
