@@ -1,12 +1,18 @@
-/* Source: https://github.com/rithmschool/node_curriculum_examples/tree/master/socket_io */
+const express = require("express"),
 
-/* node index.js to run */
-/* ngrok http 8000 to tunnel */
-
-var express = require("express"),
 app = express();
 app.use(express.static(__dirname + '/public'))
+
 var server = require("http").createServer(app);
+
+
+
+
+
+
+
+
+
 var io = require("socket.io")(server, {
     /* Handling CORS: https://socket.io/docs/v3/handling-cors/ for ngrok.io */
     cors: {
@@ -19,6 +25,9 @@ io.on('connection', function(socket){
   socket.on('join', function(name){
     socket.username = name
     io.sockets.emit("addChatter", name);
+
+    io.sockets.emit("messages", {username: 'din far', message: 'tak'});
+
   });
 
   socket.on('messages', function(message){
@@ -31,10 +40,14 @@ io.on('connection', function(socket){
   });
 });
 
+
+
+
+
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
 });
 
-server.listen(8000, function(){
-  console.log('Server started on port 8000')
+server.listen(3000, function(){
+  console.log('Server started on port 3000')
 });

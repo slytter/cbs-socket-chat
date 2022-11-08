@@ -1,8 +1,10 @@
 $(document).ready(function(){
-    var socket = io.connect('http://localhost:8000');
+    var socket = io.connect('http://localhost:3000');
   
     var username = prompt("What is your name?");
     socket.emit('join', username);
+    
+    
   
     $("#chatForm").on('submit', function(e){
       e.preventDefault();
